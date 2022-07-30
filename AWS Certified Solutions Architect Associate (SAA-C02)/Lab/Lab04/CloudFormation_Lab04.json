@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SPL-36 - Caching Static Files with Amazon CloudFront
+Parameters: 
+  LambdaFunctionName: 
+    Type: String
+    Description: Typing Your LambdaFunctionName.
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+
+  PopulateBucket:
+    Type: Custom::PopulateBucket
+    Properties:
+      ServiceToken: !GetAtt PopulateBucketFunction.Arn
+
+  PopulateBucketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 180
+      Role: arn:aws:iam::541253215789:role/PopulateBucketRole
+      Runtime: python3.7
+      Code:
+        ZipFile: !Sub |
+          import boto3
+          import json
+          import urllib3
+
+          http = urllib3.PoolManager()
+
+          def send_response(event, context, status, reason, data):
+              body = json.dumps({
+                  "Status": status,
+                  "Reason": reason,
+                  "PhysicalResourceId": context.log_stream_name,
+                  "StackId": event.get("StackId"),
+                  "RequestId": event.get("RequestId"),
+                  "LogicalResourceId": event.get("LogicalResourceId"),
+                  "NoEcho": False,
+                  "Data": data
+              })
+
+              http.request(
+                  "PUT",
+                  event.get("ResponseURL"),
+                  body=body,
+                  headers={
+                      "Content-Type": "",
+                      "Content-Length": str(len(body))
+                  }
+              )
+
+          def handler(event, context):
+              try:
+                  # Variables
+                  source_bucket_name = "us-east-resource-training"
+                  source_bucket_prefix = ""
+                  destination_bucket_name = "${S3Bucket}"
+                  destination_bucket_prefix = ""
+
+                  # Only handle 'Create' requests.
+                  if event.get("RequestType") == "Create":
+                      # Create the S3 resource and bucket objects.
+                      s3 = boto3.resource("s3")
+                      source_bucket = s3.Bucket(source_bucket_name)
+                      destination_bucket = s3.Bucket(destination_bucket_name)
+
+                      # Copy all objects from the source to the destination.
+                      for source_object in source_bucket.objects.filter(Prefix=source_bucket_prefix):
+                          destination_bucket.copy({"Bucket": source_bucket_name, "Key": source_object.key}, source_object.key.replace(source_bucket_prefix, destination_bucket_prefix), {"ACL": "public-read"})
+
+                      # Send the 'SUCCESS' response.
+                      send_response(event, context, "SUCCESS", f"Copied S3 Objects from s3://{source_bucket_name}/{source_bucket_prefix} to s3://{destination_bucket_name}/{destination_bucket_prefix}", {})
+                  else:
+                      # Send the 'SUCCESS' response.
+                      send_response(event, context, "SUCCESS", f"No Action Performed", {})
+              except Exception as exception:
+                  # Send the 'FAILED' response.
+                  send_response(event, context, "FAILED", str(exception), {})
+
+Outputs:
+  S3Bucket:
+    Description: Name of S3 Bucket
+    Value: !Ref S3Bucket
+
+  StaticWebsiteURL:
+    Description: Static Website
+    Value: !Sub http://${S3Bucket.DomainName}/cf_lab1.html

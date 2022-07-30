@@ -1,0 +1,119 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:ExitStandby",
+                "autoscaling:BatchPutScheduledUpdateGroupAction",
+                "autoscaling:EnterStandby",
+                "autoscaling:ExecutePolicy",
+                "autoscaling:DeletePolicy",
+                "autoscaling:PutScheduledUpdateGroupAction",
+                "autoscaling:PutScalingPolicy",
+                "autoscaling:UpdateAutoScalingGroup",
+                "autoscaling:DeleteNotificationConfiguration",
+                "autoscaling:SetInstanceHealth",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:PutNotificationConfiguration",
+                "autoscaling:AttachLoadBalancers",
+                "autoscaling:DeleteTags",
+                "autoscaling:DetachLoadBalancers",
+                "autoscaling:BatchDeleteScheduledAction",
+                "autoscaling:EnableMetricsCollection",
+                "autoscaling:ResumeProcesses",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:PutLifecycleHook",
+                "autoscaling:DetachLoadBalancerTargetGroups",
+                "autoscaling:SuspendProcesses",
+                "autoscaling:StartInstanceRefresh",
+                "autoscaling:AttachLoadBalancerTargetGroups",
+                "autoscaling:CreateLaunchConfiguration",
+                "autoscaling:AttachInstances",
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DisableMetricsCollection",
+                "autoscaling:DeleteLaunchConfiguration",
+                "autoscaling:CreateOrUpdateTags",
+                "autoscaling:SetInstanceProtection",
+                "autoscaling:DeleteAutoScalingGroup",
+                "autoscaling:CancelInstanceRefresh",
+                "autoscaling:DeleteLifecycleHook",
+                "autoscaling:CreateAutoScalingGroup",
+                "autoscaling:DetachInstances",
+                "autoscaling:DeleteScheduledAction",
+                "autoscaling:RecordLifecycleActionHeartbeat"
+            ],
+            "Resource": [
+                "arn:aws:autoscaling:*:541253215789:autoScalingGroup:*:autoScalingGroupName/*",
+                "arn:aws:autoscaling:*:541253215789:launchConfiguration:*:launchConfigurationName/*"
+            ],
+            "Condition": {
+                "StringEqualsIfExists": {
+                    "aws:RequestedRegion": "us-east-1"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DescribeAutoScalingNotificationTypes",
+                "autoscaling:DescribeLifecycleHookTypes",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeTerminationPolicyTypes",
+                "autoscaling:DescribeScalingProcessTypes",
+                "autoscaling:DescribePolicies",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeMetricCollectionTypes",
+                "autoscaling:DescribeLoadBalancers",
+                "autoscaling:DescribeLifecycleHooks",
+                "autoscaling:DescribeAdjustmentTypes",
+                "autoscaling:DescribeScalingActivities",
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAccountLimits",
+                "autoscaling:DescribeScheduledActions",
+                "autoscaling:DescribeLoadBalancerTargetGroups",
+                "autoscaling:DescribeNotificationConfigurations",
+                "autoscaling:DescribeInstanceRefreshes"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEqualsIfExists": {
+                    "aws:RequestedRegion": "us-east-1"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DescribeAutoScalingNotificationTypes",
+                "autoscaling:DescribeLifecycleHookTypes",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeTerminationPolicyTypes",
+                "autoscaling:DescribeScalingProcessTypes",
+                "autoscaling:DescribePolicies",
+                "autoscaling:DescribeTags",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeMetricCollectionTypes",
+                "autoscaling:DescribeLoadBalancers",
+                "autoscaling:DescribeLifecycleHooks",
+                "autoscaling:DescribeAdjustmentTypes",
+                "autoscaling:DescribeScalingActivities",
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAccountLimits",
+                "autoscaling:DescribeScheduledActions",
+                "autoscaling:DescribeLoadBalancerTargetGroups",
+                "autoscaling:DescribeNotificationConfigurations",
+                "autoscaling:DescribeInstanceRefreshes"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEqualsIfExists": {
+                    "aws:RequestedRegion": "us-east-1"
+                }
+            }
+        }
+    ]
+}

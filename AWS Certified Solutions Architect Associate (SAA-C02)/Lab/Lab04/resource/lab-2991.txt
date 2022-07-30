@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SPL-36 - Caching Static Files with Amazon CloudFront
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+
+  PopulateBucket:
+    Type: Custom::PopulateBucket
+    Properties:
+      ServiceToken: !GetAtt PopulateBucketFunction.Arn
+
+  PopulateBucketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: PopulateBucket
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 180
+      Role: !GetAtt PopulateBucketRole.Arn
+      Runtime: python3.7
+      Code:
+        ZipFile: !Sub |
+          import boto3
+          import json
+          import urllib3
+
+          http = urllib3.PoolManager()
+
+          def send_response(event, context, status, reason, data):
+              body = json.dumps({
+                  "Status": status,
+                  "Reason": reason,
+                  "PhysicalResourceId": context.log_stream_name,
+                  "StackId": event.get("StackId"),
+                  "RequestId": event.get("RequestId"),
+                  "LogicalResourceId": event.get("LogicalResourceId"),
+                  "NoEcho": False,
+                  "Data": data
+              })
+
+              http.request(
+                  "PUT",
+                  event.get("ResponseURL"),
+                  body=body,
+                  headers={
+                      "Content-Type": "",
+                      "Content-Length": str(len(body))
+                  }
+              )
+
+          def handler(event, context):
+              try:
+                  # Variables
+                  source_bucket_name = "us-west-2-aws-training"
+                  source_bucket_prefix = "awsu-spl/spl-36/3.2.7.prod/scripts/website/"
+                  destination_bucket_name = "${S3Bucket}"
+                  destination_bucket_prefix = ""
+
+                  # Only handle 'Create' requests.
+                  if event.get("RequestType") == "Create":
+                      # Create the S3 resource and bucket objects.
+                      s3 = boto3.resource("s3")
+                      source_bucket = s3.Bucket(source_bucket_name)
+                      destination_bucket = s3.Bucket(destination_bucket_name)
+
+                      # Copy all objects from the source to the destination.
+                      for source_object in source_bucket.objects.filter(Prefix=source_bucket_prefix):
+                          destination_bucket.copy({"Bucket": source_bucket_name, "Key": source_object.key}, source_object.key.replace(source_bucket_prefix, destination_bucket_prefix), {"ACL": "public-read"})
+
+                      # Send the 'SUCCESS' response.
+                      send_response(event, context, "SUCCESS", f"Copied S3 Objects from s3://{source_bucket_name}/{source_bucket_prefix} to s3://{destination_bucket_name}/{destination_bucket_prefix}", {})
+                  else:
+                      # Send the 'SUCCESS' response.
+                      send_response(event, context, "SUCCESS", f"No Action Performed", {})
+              except Exception as exception:
+                  # Send the 'FAILED' response.
+                  send_response(event, context, "FAILED", str(exception), {})
+
+  PopulateBucketRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: PopulateBucketRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: PopulateBucket
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              Effect: Allow
+              Action:
+                - s3:ListBucket
+                - s3:GetObject
+                - s3:PutObject
+                - s3:PutObjectAcl
+              Resource:
+                - "*"
+
+Outputs:
+  S3Bucket:
+    Description: Name of S3 Bucket
+    Value: !Ref S3Bucket
+
+  StaticWebsiteURL:
+    Description: Static Website
+    Value: !Sub http://${S3Bucket.DomainName}/cf_lab1.html

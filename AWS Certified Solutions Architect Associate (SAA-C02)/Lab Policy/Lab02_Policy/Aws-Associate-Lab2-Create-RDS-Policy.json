@@ -1,0 +1,77 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "iam:CreateServiceLinkedRole",
+            "Effect": "Allow",
+            "Resource": "arn:aws:iam::*:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "rds.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "rds:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": [
+                        "us-east-1"
+                    ]
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "cloudwatch:getmetricstatistics",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": [
+                        "us-east-1"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor11",
+            "Effect": "Deny",
+            "Action": "rds:CreateDBInstance",
+            "Resource": "arn:aws:rds:*:*:db:*",
+            "Condition": {
+                "ForAnyValue:StringNotLike": {
+                    "rds:DatabaseClass": [
+                        "db.t2.micro",
+                        "db.t2.small",
+                        "db.t2.medium"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor12",
+            "Effect": "Deny",
+            "Action": "rds:CreateDBInstance",
+            "Resource": "arn:aws:rds:*:*:db:*",
+            "Condition": {
+                "NumericGreaterThanEquals": {
+                    "rds:StorageSize": "100"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor13",
+            "Effect": "Deny",
+            "Action": "rds:CreateDBInstance",
+            "Resource": "arn:aws:rds:*:*:db:*",
+            "Condition": {
+                "Bool": {
+                    "rds:MultiAz": "true",
+                    "rds:StorageEncrypted": "true"
+                }
+            }
+        }
+    ]
+}
